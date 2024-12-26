@@ -96,7 +96,7 @@ require_relative '../lib/coche'
 
 class TestCoche < Test::Unit::TestCase
   def test_coche_existe
-    assert_equal(nil, Coche.new)
+    assert_instance_of(Coche, Coche.new)
   end
 
   def test_atributos_coche
