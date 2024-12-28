@@ -60,10 +60,15 @@ end
 # a un año determinado. La función debe utilizar métodos enumerables para realizar las operaciones
 # sobre la lista de coches
 
+#def contar_coches(conjuntoCoche, marca, year_limit)
+ # @cochesMarca = conjuntoCoche.select { |coche| coche.fabricante == marca }.collect(&:year_fabricacion)
+  #@cochesCount = @cochesMarca.select { |year| year >= year_limit }.collect
+  #@cochesCount.count
+#end
 def contar_coches(conjuntoCoche, marca, year_limit)
-  @cochesMarca = conjuntoCoche.select { |coche| coche.fabricante == marca }.collect(&:year_fabricacion)
-  @cochesCount = @cochesMarca.select { |year| year >= year_limit }.collect
-  @cochesCount.count
+  conjuntoCoche.count do |coche|
+    coche.fabricante == marca && coche.year_fabricacion >= year_limit
+  end
 end
 
 # RSpec.describe Coche do
