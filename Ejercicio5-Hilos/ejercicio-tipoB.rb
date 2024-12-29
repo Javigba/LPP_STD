@@ -77,3 +77,65 @@ hiloCoche1.join
 print_parking(@parking)
 
 print "Final\n"
+
+
+
+
+
+# Estado inicial del estacionamiento
+mutex = Mutex.new
+cv = ConditionVariable.new
+
+@coche1 = Coche.new(1111, "fabricante", 2021, "Mercedes-Clase G", 52638, {}, [1, 2])
+@coche2 = Coche.new(2222, "fabricante", 2021, "Mercedes-Lambda", 100000, {}, [3, 4])
+@coche3 = Coche.new(3333, "fabricante", 2021, "Mercedes-0", 987, {}, [5, 6])
+
+@parking = [@coche1, false, @coche2, false, false]
+
+# Imprimir el estado actual del parking
+def print_parking(parking)
+  puts "Estado del parking:"
+  parking.each_with_index do |estacionamiento, index|
+    puts "Plaza #{index + 1}: #{estacionamiento || 'Libre'}"
+  end
+  puts ""
+end
+
+# Hilo del coche intentando aparcar
+hiloCoche3 = Thread.new do
+  mutex.synchronize do
+    print "Coche3: Estoy esperando un sitio libre\n"
+    cv.wait(mutex) until @parking.include?(false) # Espera hasta que haya espacio libre
+
+    # Buscar espacio con reglas
+    @parking.each_with_index do |espacio, index|
+      if espacio == false && (index == 0 || @parking[index - 1] == false) && (index == @parking.size - 1 || @parking[index + 1] == false)
+        @parking[index] = @coche3
+        print "Coche3: Aparcado en la plaza #{index + 1}\n"
+        break
+      end
+    end
+  end
+end
+
+# Hilo del coche saliendo
+hiloCoche1 = Thread.new do
+  mutex.synchronize do
+    print "Coche1: Saliendo del estacionamiento...\n"
+    @parking.each_with_index do |espacio, index|
+      if espacio == @coche1
+        @parking[index] = false
+        print "Coche1: Salió de la plaza #{index + 1}\n"
+        break
+      end
+    end
+    cv.signal # Avisar a otros coches
+  end
+end
+
+# Ejecutar hilos
+hiloCoche3.join
+hiloCoche1.join
+
+print_parking(@parking)
+puts "Final"
